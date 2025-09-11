@@ -7,4 +7,4 @@ services:
       - .env
     command: ./app
     ports:
-      - "6000:6000"
+      - "4200:6000"
