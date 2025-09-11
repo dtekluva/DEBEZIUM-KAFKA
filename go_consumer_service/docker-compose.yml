@@ -1,6 +1,7 @@
 services:
   go-service:
     build: .
+    restart: always
     container_name: go-service
     env_file:
       - .env
