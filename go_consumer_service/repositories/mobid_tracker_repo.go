@@ -28,7 +28,7 @@ func (r *MobidTrackerRepo) GetAll(ctx context.Context, limit, offset int) (*[]ty
 	findOptions := options.Find()
 	findOptions.SetLimit(int64(limit))
 	findOptions.SetSkip(int64(offset))
-	findOptions.SetSort(bson.D{{Key: "created_at", Value: -1}})
+	findOptions.SetSort(bson.D{{Key: "date_created", Value: -1}})
 
 	// Find all documents in the collection
 	cursor, err := collection.Find(ctx, bson.M{}, findOptions)
