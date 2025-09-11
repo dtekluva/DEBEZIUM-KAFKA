@@ -44,11 +44,11 @@ func (kc *KafkaConsumer) ConsumeDebeziumMobidTrackerTask() {
 			log.Printf("failed to unmarshall message: %v\n", err)
 			continue
 		}
-		log.Println("Received message: ", event)
+		log.Println("Received message: ", event.Payload.After)
 		ops := event.Payload.Op
 		log.Println("Operation: ", ops)
 		switch ops {
-		case "c":
+		case "c", "r":
 			log.Println("Inserting MobidTracker: ", event.Payload.After.ID)
 			if event.Payload.After != nil {
 				_, err := collection.InsertOne(context.Background(), event.Payload.After)

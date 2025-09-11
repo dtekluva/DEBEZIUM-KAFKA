@@ -2,6 +2,8 @@ package api
 
 import (
 	"go_consumer_service/controller"
+	"go_consumer_service/repositories"
+	"go_consumer_service/service"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,6 +27,12 @@ func (s *APIServer) Start() error {
 
 	rootController := controller.NewRootController()
 	rootController.RegisterRoutes(router)
+	// add other services here
+	mobidRepo := repositories.NewMobidTrackerRepo(s.dbClient.Database("lotto2"))
+	mobidTrackerService := service.NewMobidTrackerService(*mobidRepo)
+	// add other controllers here
+	mobidController := controller.NewMobidTrackerController(*mobidTrackerService)
+	mobidController.RegisterRoutes(router)
 	// Add routes here
 	return router.Run(s.listenAddr)
 }
