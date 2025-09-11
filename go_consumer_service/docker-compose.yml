@@ -1,0 +1,9 @@
+services:
+  go-service:
+    build: .
+    container_name: go-service
+    env_file:
+      - .env
+    command: ./app
+    ports:
+      - "6000:6000"
