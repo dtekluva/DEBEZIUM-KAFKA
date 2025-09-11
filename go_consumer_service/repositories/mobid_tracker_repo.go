@@ -20,14 +20,15 @@ func NewMobidTrackerRepo(database *mongo.Database) *MobidTrackerRepo {
 func (r *MobidTrackerRepo) GetAll(ctx context.Context, limit, offset int) (*[]types.MobidTracker, int, error) {
 	collection := r.database.Collection("mobid_tracker")
 	// Count total docs
-	total, err := collection.CountDocuments(ctx, bson.M{})
+	// total, err := collection.CountDocuments(ctx, bson.M{})
+	total, err := collection.EstimatedDocumentCount(ctx)
 	if err != nil {
 		return nil, 0, err
 	}
 	// Query with pagination
 	findOptions := options.Find()
 	findOptions.SetLimit(int64(limit))
-	findOptions.SetSkip(int64(offset))
+	// findOptions.SetSkip(int64(offset))
 	findOptions.SetSort(bson.D{{Key: "date_created", Value: -1}})
 
 	// Find all documents in the collection
