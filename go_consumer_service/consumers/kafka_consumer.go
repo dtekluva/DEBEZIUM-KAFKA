@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/segmentio/kafka-go"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -61,7 +62,9 @@ func (kc *KafkaConsumer) ConsumeDebeziumMobidTrackerTask() {
 		case "u":
 			log.Println("Updating MobidTracker: ", event.Payload.After.ID)
 			if event.Payload.After != nil {
-				_, err := collection.UpdateOne(context.Background(), event.Payload.After.ID, event.Payload.After)
+				filter := bson.M{"id": event.Payload.After.ID}
+				update := bson.M{"$set": event.Payload.After}
+				_, err := collection.UpdateOne(context.Background(), filter, update)
 				if err != nil {
 					log.Printf("failed to update mobidtracker: %v\n", err)
 				} else {
