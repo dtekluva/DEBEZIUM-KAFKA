@@ -6,24 +6,24 @@ type MobidTrackerEvent struct {
 	Payload Payload `json:"payload"`
 }
 type MobidTracker struct {
-	ID                     int       `json:"id"`
-	ClickID                string    `json:"click_id"`
-	PhoneNumber            string    `json:"phone_number"`
-	Converted              bool      `json:"converted"`
-	AmountPlayed           float64   `json:"amount_played"`
-	Source                 string    `json:"source"`
-	DateCreated            time.Time `json:"date_created"`
-	LastUpdated            time.Time `json:"last_updated"`
-	GameType               string    `json:"game_type"`
-	NumberOfRenewals       int       `json:"number_of_renewals"`
-	AmountPaid             float64   `json:"amount_paid"`
-	TelcoNetwork           any       `json:"telco_network"`
-	PostbackSent           bool      `json:"postback_sent"`
-	PostbackResponse       string    `json:"postback_response"`
-	Controled              bool      `json:"controled"`
-	Unsubscribed           bool      `json:"unsubscribed"`
-	DateUnsubscribed       any       `json:"date_unsubscribed"`
-	NumberOfUnsubsriptions int       `json:"number_of_unsubsriptions"`
+	ID                     int       `json:"id" bson:"id"`
+	ClickID                string    `json:"click_id" bson:"click_id"`
+	PhoneNumber            string    `json:"phone_number" bson:"phone_number"`
+	Converted              bool      `json:"converted" bson:"converted"`
+	AmountPlayed           float64   `json:"amount_played" bson:"amount_played"`
+	Source                 string    `json:"source" bson:"source"`
+	DateCreated            time.Time `json:"date_created" bson:"date_created"`
+	LastUpdated            time.Time `json:"last_updated" bson:"last_updated"`
+	GameType               string    `json:"game_type" bson:"game_type"`
+	NumberOfRenewals       int       `json:"number_of_renewals" bson:"number_of_renewals"`
+	AmountPaid             float64   `json:"amount_paid" bson:"amount_paid"`
+	TelcoNetwork           any       `json:"telco_network" bson:"telco_network"`
+	PostbackSent           bool      `json:"postback_sent" bson:"postback_sent"`
+	PostbackResponse       string    `json:"postback_response" bson:"postback_response"`
+	Controled              bool      `json:"controled" bson:"controled"`
+	Unsubscribed           bool      `json:"unsubscribed" bson:"unsubscribed"`
+	DateUnsubscribed       any       `json:"date_unsubscribed" bson:"date_unsubscribed"`
+	NumberOfUnsubsriptions int       `json:"number_of_unsubsriptions" bson:"number_of_unsubsriptions"`
 }
 type Source struct {
 	Version   string `json:"version"`
