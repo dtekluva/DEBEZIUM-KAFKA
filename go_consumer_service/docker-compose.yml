@@ -8,3 +8,49 @@ services:
     command: ./app
     ports:
       - "4200:6000"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+
+  # add kafka ui
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: todo_eda_cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8085:8080"
+
+  debezium:
+    image: debezium/connect:2.5
+    depends_on:
+      - kafka
+      - postgres
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9093
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_configs
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_statuses
+      CONNECT_CONFIG_STORAGE_TOPIC: connect_configs
+      CONNECT_OFFSET_STORAGE_TOPIC: connect_offsets
+      CONNECT_STATUS_STORAGE_TOPIC: connect_status
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+    # KEY_CONVERTER_SCHEMAS_ENABLE: false
+    # VALUE_CONVERTER_SCHEMAS_ENABLE: false
+    ports:
+      - "8083:8083"
