@@ -1,0 +1,7 @@
+packages:
+  - name: lotto
+    actions:
+      - name: mobid
+        runtime: python:3.11
+        main: main
+        web: true

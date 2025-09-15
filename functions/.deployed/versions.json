@@ -1,0 +1,22 @@
+[
+  {
+    "apihost": "https://faas-sfo3-7872a1dd.doserverless.co",
+    "namespace": "fn-acc73ced-e0b8-4a48-8154-e7ca525726bd",
+    "packageVersions": {
+      "agencybanking": {
+        "version": "0.0.19",
+        "digest": "9a798296dcf0c54809ae61fb73ea470e860bb00864908cce833d6b0fd3b31cc0"
+      },
+      "lotto": {
+        "version": "0.0.27",
+        "digest": "2a8d0343f5bfda05c24b0c83819ef262829602b4daed3823e9d9bd23b9c3fe66"
+      }
+    },
+    "actionVersions": {
+      "lotto/mobid": {
+        "version": "0.0.19",
+        "digest": "ac1bbe760a4736476b7a789dc525fe6d1d58ab15d2bd2c7cb24eeab2a0a6bbfe"
+      }
+    }
+  }
+]
