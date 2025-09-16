@@ -283,3 +283,65 @@ func (kc *KafkaConsumer) ConsumeLotteryModelDebeziumEvent() {
 	}
 
 }
+
+func (kc *KafkaConsumer) ConsumeAwoofGameTableDebeziumEvent() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{*kc.brokerUrl},
+		GroupID: "awoof-game-table-cdc-test",
+		Topic:   "postgres.public.awoof_app_awoofgametable",
+	})
+	collection := kc.database.Collection("awoof_game_table")
+	log.Println("Kafka Consumer Started for AwoofGameTable CDC......")
+	for {
+		msg, err := r.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		var event types.AwoofGameTableEvent
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("failed to unmarshall message: %v\n", err)
+			continue
+		}
+		log.Println("Received message: ", event.Payload.After)
+		ops := event.Payload.Op
+		log.Println("Operation: ", ops)
+		switch ops {
+		case "c", "r":
+			log.Println("Inserting AwoofGameTable: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				_, err := collection.InsertOne(context.Background(), event.Payload.After)
+				if err != nil {
+					log.Printf("failed to insert awoofgametable: %v\n", err)
+				} else {
+					log.Println("AwoofGameTable inserted successfully")
+				}
+			}
+		case "u":
+			log.Println("Updating AwoofGameTable: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				filter := bson.M{"id": event.Payload.After.ID}
+				update := bson.M{"$set": event.Payload.After}
+				opts := options.UpdateOptions{}
+				opts.SetUpsert(true)
+				_, err := collection.UpdateOne(context.Background(), filter, update, &opts)
+				if err != nil {
+					log.Printf("failed to update awoofgametable: %v\n", err)
+				} else {
+					log.Println("AwoofGameTable updated successfully")
+				}
+			}
+		case "d":
+			log.Println("Deleting AwoofGameTable: ", event.Payload.Before.ID)
+			if event.Payload.Before != nil {
+				_, err := collection.DeleteOne(context.Background(), event.Payload.Before.ID)
+				if err != nil {
+					log.Printf("failed to delete awoofgametable: %v\n", err)
+				} else {
+					log.Println("AwoofGameTable deleted successfully")
+				}
+			}
+		default:
+			log.Println("Unknown operation: ", ops)
+		}
+	}
+}
