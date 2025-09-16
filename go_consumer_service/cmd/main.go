@@ -33,7 +33,8 @@ func main() {
 	// go kafkaConsumer.ConsumeLottoDebeziumEvent()
 	// go kafkaConsumer.ConsumeLotteryModelDebeziumEvent()
 	// go kafkaConsumer.ConsumeAwoofGameTableDebeziumEvent()
-	go kafkaConsumer.ConsumeSecureDTransactionDebeziumEvent()
+	// go kafkaConsumer.ConsumeSecureDTransactionDebeziumEvent()
+	go kafkaConsumer.ConsumeConstantTableEvent()
 
 	apiServer := api.NewAPIServer(":6000", dbClient)
 

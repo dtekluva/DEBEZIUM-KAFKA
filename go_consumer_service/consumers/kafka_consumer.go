@@ -407,3 +407,65 @@ func (kc *KafkaConsumer) ConsumeSecureDTransactionDebeziumEvent() {
 		}
 	}
 }
+
+func (kc *KafkaConsumer) ConsumeConstantTableEvent() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{*kc.brokerUrl},
+		GroupID: "constant-table-cdc-test",
+		Topic:   "postgres.public.admin_dashboard_constanttable",
+	})
+	collection := kc.database.Collection("constant_table")
+	log.Println("Kafka Consumer Started for ConstantTable CDC......")
+	for {
+		msg, err := r.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		var event types.ConstantTableDebeziumEvent
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("failed to unmarshall message: %v\n", err)
+			continue
+		}
+		log.Println("Received message: ", event.Payload.After)
+		ops := event.Payload.Op
+		log.Println("Operation: ", ops)
+		switch ops {
+		case "c", "r":
+			log.Println("Inserting ConstantTable: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				_, err := collection.InsertOne(context.Background(), event.Payload.After)
+				if err != nil {
+					log.Printf("failed to insert constanttable: %v\n", err)
+				} else {
+					log.Println("ConstantTable inserted successfully")
+				}
+			}
+		case "u":
+			log.Println("Updating ConstantTable: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				filter := bson.M{"id": event.Payload.After.ID}
+				update := bson.M{"$set": event.Payload.After}
+				opts := options.UpdateOptions{}
+				opts.SetUpsert(true)
+				_, err := collection.UpdateOne(context.Background(), filter, update, &opts)
+				if err != nil {
+					log.Printf("failed to update constanttable: %v\n", err)
+				} else {
+					log.Println("ConstantTable updated successfully")
+				}
+			}
+		case "d":
+			log.Println("Deleting ConstantTable: ", event.Payload.Before.ID)
+			if event.Payload.Before != nil {
+				_, err := collection.DeleteOne(context.Background(), event.Payload.Before.ID)
+				if err != nil {
+					log.Printf("failed to delete constanttable: %v\n", err)
+				} else {
+					log.Println("ConstantTable deleted successfully")
+				}
+			}
+		default:
+			log.Println("Unknown operation: ", ops)
+		}
+	}
+}

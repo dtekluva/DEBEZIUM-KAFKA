@@ -20,8 +20,8 @@ services:
     image: mongo:6
     ports:
       - "27017:27017"
-
-  # add kafka ui
+    volumes:
+      - mongodb_data:/data/db
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     # depends_on:
@@ -54,3 +54,6 @@ services:
     # VALUE_CONVERTER_SCHEMAS_ENABLE: false
     ports:
       - "8083:8083"
+
+volumes:
+  mongodb_data:
