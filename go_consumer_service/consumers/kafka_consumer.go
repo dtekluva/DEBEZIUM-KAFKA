@@ -223,7 +223,7 @@ func (kc *KafkaConsumer) ConsumeLotteryModelDebeziumEvent() {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{*kc.brokerUrl},
 		GroupID: "lottery-model-cdc-test",
-		Topic:   "postgres.public.main_lottery",
+		Topic:   "postgres.public.main_lotterymodel",
 	})
 
 	collection := kc.database.Collection("lottery_model")
