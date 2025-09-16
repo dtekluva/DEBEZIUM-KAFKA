@@ -74,3 +74,16 @@ type DataDumpData struct {
 	Timestamp   string `json:"timestamp"` // keep as string, parse later
 	TrxId       string `json:"trxId"`
 }
+
+type SecureDTransactionEvent struct {
+	Payload SecureDTransactionPayload `json:"payload"`
+}
+
+type SecureDTransactionPayload struct {
+	Before      *SecureDTransaction  `json:"before"`
+	After       *SecureDTransaction  `json:"after"`
+	Source      SecureDataDumpSource `json:"source"`
+	Op          string               `json:"op"`
+	TsMs        int64                `json:"ts_ms"`
+	Transaction any                  `json:"transaction"`
+}

@@ -345,3 +345,65 @@ func (kc *KafkaConsumer) ConsumeAwoofGameTableDebeziumEvent() {
 		}
 	}
 }
+
+func (kc *KafkaConsumer) ConsumeSecureDTransactionDebeziumEvent() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{*kc.brokerUrl},
+		GroupID: "secure-d-transaction-cdc-test",
+		Topic:   "postgres.public.wyse_ussd_securedtransaction",
+	})
+	collection := kc.database.Collection("secure_d_transaction")
+	log.Println("Kafka Consumer Started for SecureDTransaction CDC......")
+	for {
+		msg, err := r.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		var event types.SecureDTransactionEvent
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("failed to unmarshall message: %v\n", err)
+			continue
+		}
+		log.Println("Received message: ", event.Payload.After)
+		ops := event.Payload.Op
+		log.Println("Operation: ", ops)
+		switch ops {
+		case "c", "r":
+			log.Println("Inserting SecureDTransaction: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				_, err := collection.InsertOne(context.Background(), event.Payload.After)
+				if err != nil {
+					log.Printf("failed to insert securedtransaction: %v\n", err)
+				} else {
+					log.Println("SecureDTransaction inserted successfully")
+				}
+			}
+		case "u":
+			log.Println("Updating SecureDTransaction: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				filter := bson.M{"id": event.Payload.After.ID}
+				update := bson.M{"$set": event.Payload.After}
+				opts := options.UpdateOptions{}
+				opts.SetUpsert(true)
+				_, err := collection.UpdateOne(context.Background(), filter, update, &opts)
+				if err != nil {
+					log.Printf("failed to update securedtransaction: %v\n", err)
+				} else {
+					log.Println("SecureDTransaction updated successfully")
+				}
+			}
+		case "d":
+			log.Println("Deleting SecureDTransaction: ", event.Payload.Before.ID)
+			if event.Payload.Before != nil {
+				_, err := collection.DeleteOne(context.Background(), event.Payload.Before.ID)
+				if err != nil {
+					log.Printf("failed to delete securedtransaction: %v\n", err)
+				} else {
+					log.Println("SecureDTransaction deleted successfully")
+				}
+			}
+		default:
+			log.Println("Unknown operation: ", ops)
+		}
+	}
+}
