@@ -29,6 +29,7 @@ func main() {
 	kafkaBrokerUrl := webutils.GetEnv("KAFKA_BROKER_URL", "localhost:9092")
 	kafkaConsumer := consumers.NewKafkaConsumer(&kafkaBrokerUrl, dbClient.Database("lotto2"))
 	go kafkaConsumer.ConsumeDebeziumMobidTrackerTask()
+	go kafkaConsumer.ConsumeDebeziumSecureDataDumpTask()
 
 	apiServer := api.NewAPIServer(":6000", dbClient)
 

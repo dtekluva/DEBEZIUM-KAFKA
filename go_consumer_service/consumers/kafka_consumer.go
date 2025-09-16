@@ -86,3 +86,67 @@ func (kc *KafkaConsumer) ConsumeDebeziumMobidTrackerTask() {
 		}
 	}
 }
+
+// ConsumeDebeziumSecureDataDump consumes debezium messages to topic securedatadump
+func (kc *KafkaConsumer) ConsumeDebeziumSecureDataDumpTask() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{*kc.brokerUrl},
+		GroupID: "lotto-securedatadump-cdc-test",
+		Topic:   "postgres.public.wyse_ussd_secureddatadump",
+	})
+	collection := kc.database.Collection("secure_data_dump")
+	log.Println("Kafka Consumer Started for SecureDataDump CDC......")
+
+	for {
+		msg, err := r.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		var event types.SecureDataDumpEvent
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("failed to unmarshall message: %v\n", err)
+			continue
+		}
+		log.Println("Received message: ", event.Payload.After)
+		ops := event.Payload.Op
+		log.Println("Operation: ", ops)
+		switch ops {
+		case "c", "r":
+			log.Println("Inserting SecureDataDump: ", event.Payload.After.ID)
+			log.Println("SecureDataDump: ", event.Payload.After.Data)
+			if event.Payload.After != nil {
+				_, err := collection.InsertOne(context.Background(), event.Payload.After)
+				if err != nil {
+					log.Printf("failed to insert securedatadump: %v\n", err)
+				} else {
+					log.Println("SecureDataDump inserted successfully")
+				}
+			}
+		case "u":
+			log.Println("Updating SecureDataDump: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				filter := bson.M{"id": event.Payload.After.ID}
+				update := bson.M{"$set": event.Payload.After}
+				_, err := collection.UpdateOne(context.Background(), filter, update)
+				if err != nil {
+					log.Printf("failed to update securedatadump: %v\n", err)
+				} else {
+					log.Println("SecureDataDump updated successfully")
+				}
+			}
+		case "d":
+			log.Println("Deleting SecureDataDump: ", event.Payload.Before.ID)
+			if event.Payload.Before != nil {
+				_, err := collection.DeleteOne(context.Background(), event.Payload.Before.ID)
+				if err != nil {
+					log.Printf("failed to delete securedatadump: %v\n", err)
+				} else {
+					log.Println("SecureDataDump deleted successfully")
+				}
+			}
+		default:
+			log.Println("Unknown operation: ", ops)
+		}
+
+	}
+}

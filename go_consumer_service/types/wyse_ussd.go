@@ -2,6 +2,10 @@ package types
 
 import "time"
 
+type SecureDataDumpEvent struct {
+	Payload SecureDataDumpPayload `json:"payload"`
+}
+
 type SecureDDataDump struct {
 	ID                int       `bson:"id,omitempty" json:"id"`
 	Data              string    `bson:"data" json:"data"`
@@ -36,4 +40,29 @@ type CampaignSkipTable struct {
 	LastSkipEnd   *time.Time `bson:"last_skip_end,omitempty" json:"last_skip_end,omitempty"`
 	DateCreated   time.Time  `bson:"date_created,omitempty" json:"date_created"`
 	LastUpdated   time.Time  `bson:"last_updated,omitempty" json:"last_updated"`
+}
+
+
+type SecureDataDumpSource struct {
+	Version   string `json:"version"`
+	Connector string `json:"connector"`
+	Name      string `json:"name"`
+	TsMs      int64  `json:"ts_ms"`
+	Snapshot  string `json:"snapshot"`
+	Db        string `json:"db"`
+	Sequence  string `json:"sequence"`
+	Schema    string `json:"schema"`
+	Table     string `json:"table"`
+	TxID      int    `json:"txId"`
+	Lsn       int64  `json:"lsn"`
+	Xmin      any    `json:"xmin"`
+}
+
+type SecureDataDumpPayload struct {
+	Before      *SecureDDataDump `json:"before"`
+	After       *SecureDDataDump `json:"after"`
+	Source      SecureDataDumpSource        `json:"source"`
+	Op          string        `json:"op"`
+	TsMs        int64         `json:"ts_ms"`
+	Transaction any           `json:"transaction"`
 }
