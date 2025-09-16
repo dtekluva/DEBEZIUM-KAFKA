@@ -42,7 +42,6 @@ type CampaignSkipTable struct {
 	LastUpdated   time.Time  `bson:"last_updated,omitempty" json:"last_updated"`
 }
 
-
 type SecureDataDumpSource struct {
 	Version   string `json:"version"`
 	Connector string `json:"connector"`
@@ -59,10 +58,19 @@ type SecureDataDumpSource struct {
 }
 
 type SecureDataDumpPayload struct {
-	Before      *SecureDDataDump `json:"before"`
-	After       *SecureDDataDump `json:"after"`
-	Source      SecureDataDumpSource        `json:"source"`
-	Op          string        `json:"op"`
-	TsMs        int64         `json:"ts_ms"`
-	Transaction any           `json:"transaction"`
+	Before      *SecureDDataDump     `json:"before"`
+	After       *SecureDDataDump     `json:"after"`
+	Source      SecureDataDumpSource `json:"source"`
+	Op          string               `json:"op"`
+	TsMs        int64                `json:"ts_ms"`
+	Transaction any                  `json:"transaction"`
+}
+
+type DataDumpData struct {
+	Msisdn      string `json:"msisdn"`
+	Activation  string `json:"activation"`
+	ProductID   string `json:"productID"`
+	Description string `json:"description"`
+	Timestamp   string `json:"timestamp"` // keep as string, parse later
+	TrxId       string `json:"trxId"`
 }
