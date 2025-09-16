@@ -9,6 +9,7 @@ import (
 	"github.com/segmentio/kafka-go"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type KafkaConsumer struct {
@@ -64,7 +65,9 @@ func (kc *KafkaConsumer) ConsumeDebeziumMobidTrackerTask() {
 			if event.Payload.After != nil {
 				filter := bson.M{"id": event.Payload.After.ID}
 				update := bson.M{"$set": event.Payload.After}
-				_, err := collection.UpdateOne(context.Background(), filter, update)
+				opts := options.UpdateOptions{}
+				opts.SetUpsert(true)
+				_, err := collection.UpdateOne(context.Background(), filter, update, &opts)
 				if err != nil {
 					log.Printf("failed to update mobidtracker: %v\n", err)
 				} else {
@@ -127,7 +130,9 @@ func (kc *KafkaConsumer) ConsumeDebeziumSecureDataDumpTask() {
 			if event.Payload.After != nil {
 				filter := bson.M{"id": event.Payload.After.ID}
 				update := bson.M{"$set": event.Payload.After}
-				_, err := collection.UpdateOne(context.Background(), filter, update)
+				opts := options.UpdateOptions{}
+				opts.SetUpsert(true)
+				_, err := collection.UpdateOne(context.Background(), filter, update, &opts)
 				if err != nil {
 					log.Printf("failed to update securedatadump: %v\n", err)
 				} else {
@@ -149,4 +154,132 @@ func (kc *KafkaConsumer) ConsumeDebeziumSecureDataDumpTask() {
 		}
 
 	}
+}
+
+func (kc *KafkaConsumer) ConsumeLottoDebeziumEvent() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{*kc.brokerUrl},
+		GroupID: "lotto-event-cdc-test",
+		Topic:   "postgres.public.main_lottoticket",
+	})
+	collection := kc.database.Collection("lotto_event")
+	log.Println("Kafka Consumer Started for LottoEvent CDC......")
+
+	for {
+		msg, err := r.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		var event types.LottoTicketEvent
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("failed to unmarshall message: %v\n", err)
+			continue
+		}
+		log.Println("Received message: ", event.Payload.After)
+		ops := event.Payload.Op
+		log.Println("Operation: ", ops)
+		switch ops {
+		case "c", "r":
+			log.Println("Inserting LottoEvent: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				_, err := collection.InsertOne(context.Background(), event.Payload.After)
+				if err != nil {
+					log.Printf("failed to insert lottoevent: %v\n", err)
+				} else {
+					log.Println("LottoEvent inserted successfully")
+				}
+			}
+		case "u":
+			log.Println("Updating LottoEvent: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				filter := bson.M{"id": event.Payload.After.ID}
+				update := bson.M{"$set": event.Payload.After}
+				opts := options.UpdateOptions{}
+				opts.SetUpsert(true)
+				_, err := collection.UpdateOne(context.Background(), filter, update, &opts)
+				if err != nil {
+					log.Printf("failed to update lottoevent: %v\n", err)
+				} else {
+					log.Println("LottoEvent updated successfully")
+				}
+			}
+		case "d":
+			log.Println("Deleting LottoEvent: ", event.Payload.Before.ID)
+			if event.Payload.Before != nil {
+				_, err := collection.DeleteOne(context.Background(), event.Payload.Before.ID)
+				if err != nil {
+					log.Printf("failed to delete lottoevent: %v\n", err)
+				} else {
+					log.Println("LottoEvent deleted successfully")
+				}
+			}
+		default:
+			log.Println("Unknown operation: ", ops)
+		}
+	}
+}
+
+func (kc *KafkaConsumer) ConsumeLotteryModelDebeziumEvent() {
+	r := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: []string{*kc.brokerUrl},
+		GroupID: "lottery-model-cdc-test",
+		Topic:   "postgres.public.main_lottery",
+	})
+
+	collection := kc.database.Collection("lottery_model")
+	log.Println("Kafka Consumer Started for LotteryModel CDC......")
+
+	for {
+		msg, err := r.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		var event types.LotteryEvent
+		if err := json.Unmarshal(msg.Value, &event); err != nil {
+			log.Printf("failed to unmarshall message: %v\n", err)
+			continue
+		}
+		log.Println("Received message: ", event.Payload.After)
+		ops := event.Payload.Op
+		log.Println("Operation: ", ops)
+		switch ops {
+		case "c", "r":
+			log.Println("Inserting LotteryModel: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				_, err := collection.InsertOne(context.Background(), event.Payload.After)
+				if err != nil {
+					log.Printf("failed to insert lotterymodel: %v\n", err)
+				} else {
+					log.Println("LotteryModel inserted successfully")
+				}
+			}
+		case "u":
+			log.Println("Updating LotteryModel: ", event.Payload.After.ID)
+			if event.Payload.After != nil {
+				filter := bson.M{"id": event.Payload.After.ID}
+				update := bson.M{"$set": event.Payload.After}
+				opts := options.UpdateOptions{}
+				opts.SetUpsert(true)
+				_, err := collection.UpdateOne(context.Background(), filter, update, &opts)
+				if err != nil {
+					log.Printf("failed to update lotterymodel: %v\n", err)
+				} else {
+					log.Println("LotteryModel updated successfully")
+				}
+			}
+		case "d":
+			log.Println("Deleting LotteryModel: ", event.Payload.Before.ID)
+			if event.Payload.Before != nil {
+				_, err := collection.DeleteOne(context.Background(), event.Payload.Before.ID)
+				if err != nil {
+					log.Printf("failed to delete lotterymodel: %v\n", err)
+				} else {
+					log.Println("LotteryModel deleted successfully")
+				}
+			}
+		default:
+			log.Println("Unknown operation: ", ops)
+		}
+	}
+
 }

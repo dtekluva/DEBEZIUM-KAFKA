@@ -93,3 +93,69 @@ type LottoTicketEventPayload struct {
 	TsMs        int64            `json:"ts_ms"`
 	Transaction any              `json:"transaction"`
 }
+
+type Lottery struct {
+	ID                    int64      `bson:"id,omitempty" json:"id,omitempty"`
+	UserProfileID         *int64     `bson:"user_profile_id,omitempty" json:"user_profile_id,omitempty"`
+	AgentProfileID        *int64     `bson:"agent_profile_id,omitempty" json:"agent_profile_id,omitempty"`
+	BatchID               int64      `bson:"batch_id" json:"batch_id"`
+	UniqueID              *string    `bson:"unique_id,omitempty" json:"unique_id,omitempty"`
+	Phone                 string     `bson:"phone" json:"phone"`
+	InstanceNumber        int        `bson:"instance_number" json:"instance_number"`
+	Pool                  string     `bson:"pool" json:"pool"`
+	Band                  float64    `bson:"band" json:"band"`
+	StakeAmount           float64    `bson:"stake_amount" json:"stake_amount"`
+	LuckyNumber           string     `bson:"lucky_number" json:"lucky_number"`
+	Paid                  bool       `bson:"paid" json:"paid"`
+	AccountNo             *string    `bson:"account_no,omitempty" json:"account_no,omitempty"`
+	BankName              *string    `bson:"bank_name,omitempty" json:"bank_name,omitempty"`
+	UssdWatupayBankCode   *string    `bson:"ussd_watupay_bank_code,omitempty" json:"ussd_watupay_bank_code,omitempty"`
+	Date                  time.Time  `bson:"date" json:"date"`
+	LastUpdated           time.Time  `bson:"last_updated" json:"last_updated"`
+	PaidDate              *time.Time `bson:"paid_date,omitempty" json:"paid_date,omitempty"`
+	HasInterest           bool       `bson:"has_interest" json:"has_interest"`
+	PayoutAccountNo       *string    `bson:"payout_account_no,omitempty" json:"payout_account_no,omitempty"`
+	PayoutBankName        *string    `bson:"payout_bank_name,omitempty" json:"payout_bank_name,omitempty"`
+	PayoutBankCode        *string    `bson:"payout_bank_code,omitempty" json:"payout_bank_code,omitempty"`
+	LoandiskPoolID        *string    `bson:"loandisk_pool_id,omitempty" json:"loandisk_pool_id,omitempty"`
+	ExistOnLoandisk       bool       `bson:"exist_on_loandisk" json:"exist_on_loandisk"`
+	LoandiskStatusID      string     `bson:"loandisk_status_id" json:"loandisk_status_id"`
+	Channel               string     `bson:"channel" json:"channel"`
+	Consent               bool       `bson:"consent" json:"consent"`
+	GamePlayID            *string    `bson:"game_play_id,omitempty" json:"game_play_id,omitempty"`
+	UniqueGamePlayID      *string    `bson:"unique_game_play_id,omitempty" json:"unique_game_play_id,omitempty"`
+	ExpectedAmount        float64    `bson:"expected_amount" json:"expected_amount"`
+	AmountPaid            float64    `bson:"amount_paid" json:"amount_paid"`
+	Rto                   float64    `bson:"rto" json:"rto"`
+	Rtp                   float64    `bson:"rtp" json:"rtp"`
+	RtpPer                float64    `bson:"rtp_per" json:"rtp_per"`
+	CommissionPer         float64    `bson:"commission_per" json:"commission_per"`
+	CommissionValue       float64    `bson:"commission_value" json:"commission_value"`
+	WinCommissionPer      float64    `bson:"win_commission_per" json:"win_commission_per"`
+	WinCommissionValue    float64    `bson:"win_commission_value" json:"win_commission_value"`
+	LotteryType           string     `bson:"lottery_type" json:"lottery_type"`
+	LotterySource         string     `bson:"lottery_source" json:"lottery_source"`
+	BusinessName          *string    `bson:"business_name,omitempty" json:"business_name,omitempty"`
+	BusinessFile          *string    `bson:"business_file,omitempty" json:"business_file,omitempty"`
+	BusinessDescription   *string    `bson:"business_description,omitempty" json:"business_description,omitempty"`
+	IsDuplicate           bool       `bson:"is_duplicate" json:"is_duplicate"`
+	IsAgent               bool       `bson:"is_agent" json:"is_agent"`
+	TelcoNetwork          *string    `bson:"telco_network,omitempty" json:"telco_network,omitempty"`
+	TelcoChannel          *string    `bson:"telco_channel,omitempty" json:"telco_channel,omitempty"`
+	Pin                   *string    `bson:"pin,omitempty" json:"pin,omitempty"`
+	IdentityID            *string    `bson:"identity_id,omitempty" json:"identity_id,omitempty"`
+	PlayedViaTelcoChannel bool       `bson:"played_via_telco_channel" json:"played_via_telco_channel"`
+}
+
+type LotteryModelPayload struct {
+	Before      *Lottery         `json:"before"`
+	After       *Lottery         `json:"after"`
+	Source      LottoEventSource `json:"source"`
+	Op          string           `json:"op"`
+	TsMs        int64            `json:"ts_ms"`
+	Transaction any
+}
+
+type LotteryEvent struct {
+	Payload LotteryModelPayload `json:"payload"`
+}
