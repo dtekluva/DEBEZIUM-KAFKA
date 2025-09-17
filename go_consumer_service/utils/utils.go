@@ -312,8 +312,30 @@ func (u *Utils) SendMarketingPartnersPostback(instanceId int) {
 	}
 	// get the data
 	var data SecureDDataDumpData
-	if err := json.Unmarshal([]byte(secureDDump.Data), &data); err != nil {
-		log.Println("Error unmarshalling secure data dump data: ", err.Error())
+	raw := secureDDump.Data
+
+	// If the string starts with "b'" and ends with "'", strip them
+	if strings.HasPrefix(raw, "b'") && strings.HasSuffix(raw, "'") {
+		raw = raw[2 : len(raw)-1]
+	}
+	fmt.Printf(raw)
+
+	// unquoted, err := strconv.Unquote(`"` + raw + `"`)
+	// if err != nil {
+	// 	log.Println("Error unquoting secure data dump data:", err)
+	// 	return
+	// }
+
+	// if err := json.Unmarshal([]byte(unquoted), &data); err != nil {
+	// 	log.Println("Error unmarshalling secure data dump data:", err)
+	// 	return
+	// }
+	clean := strings.ReplaceAll(raw, `\n`, "\n")
+	clean = strings.ReplaceAll(clean, `\t`, "\t")
+
+	// Step 3: Now unmarshal
+	if err := json.Unmarshal([]byte(clean), &data); err != nil {
+		log.Println("Error unmarshalling secure data dump data:", err)
 		return
 	}
 	// let's see the data
