@@ -2,8 +2,11 @@ package utils
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"go_consumer_service/types"
 	"log"
+	"strings"
 
 	"github.com/Ayobami6/webutils"
 	"go.mongodb.org/mongo-driver/bson"
@@ -205,4 +208,393 @@ func SendSlackNotification(message string) {
 		return
 	}
 	log.Println("Slack notification sent successfully")
+}
+
+// helper function for optional int fields
+func intPtr(i int) *int {
+	return &i
+}
+
+// helper function for optional bool fields
+func boolPtr(b bool) *bool {
+	return &b
+}
+
+// helper function for optional string fields
+func strPtr(s string) *string {
+	return &s
+}
+
+type Product struct {
+	ServiceName         string  `json:"service_name"`
+	ServiceID           string  `json:"service_id"`
+	ProductName         string  `json:"product_name"`
+	Amount              float64 `json:"amount"`
+	ProductID           string  `json:"product_id"`
+	LineNumber          *int    `json:"line_number,omitempty"`
+	Band                *int    `json:"band,omitempty"`
+	IsDailySubscription *bool   `json:"is_daily_subscription,omitempty"`
+	Network             *string `json:"network,omitempty"`
+}
+
+// SecureDAndUpstreamServiceAndProductDetails looks up product by ID
+func SecureDAndUpstreamServiceAndProductDetails(productID string) *Product {
+	data := map[string]Product{
+		"23410220000024641": {ServiceName: "WYSE_CASH_150", ServiceID: "234102200006769", ProductName: "WYSE_CASH", Amount: 150, ProductID: "23410220000024641"},
+		"23410220000024642": {ServiceName: "WYSE_CASH_200", ServiceID: "234102200006769", ProductName: "WYSE_CASH", Amount: 200, ProductID: "23410220000024642"},
+		"23410220000024643": {ServiceName: "WYSE_CASH_300", ServiceID: "234102200006769", ProductName: "WYSE_CASH", Amount: 300, ProductID: "23410220000024643", Band: intPtr(10000)},
+		"23410220000024644": {ServiceName: "WYSE_CASH_400", ServiceID: "234102200006769", ProductName: "WYSE_CASH", Amount: 400, ProductID: "23410220000024644"},
+		"23410220000024645": {ServiceName: "WYSE_CASH_500", ServiceID: "234102200006769", ProductName: "WYSE_CASH", Amount: 500, ProductID: "23410220000024645"},
+		"23410220000024646": {ServiceName: "WYSE_CASH_700", ServiceID: "234102200006769", ProductName: "WYSE_CASH", Amount: 700, ProductID: "23410220000024646"},
+		"23410220000024647": {ServiceName: "WYSE_CASH_1000", ServiceID: "234102200006769", ProductName: "WYSE_CASH", Amount: 1000, ProductID: "23410220000024647"},
+		"23410220000024635": {ServiceName: "INSTANT_CASH_150", ServiceID: "234102200006767", ProductName: "INSTANT_CASH", Amount: 150, ProductID: "23410220000024635", LineNumber: intPtr(1)},
+		"23410220000024636": {ServiceName: "INSTANT_CASH_300", ServiceID: "234102200006767", ProductName: "INSTANT_CASH", Amount: 300, ProductID: "23410220000024636", LineNumber: intPtr(1)},
+		"23410220000024637": {ServiceName: "INSTANT_CASH_500", ServiceID: "234102200006767", ProductName: "INSTANT_CASH", Amount: 500, ProductID: "23410220000024637", LineNumber: intPtr(2)},
+		"23410220000024638": {ServiceName: "INSTANT_CASH_750", ServiceID: "234102200006767", ProductName: "INSTANT_CASH", Amount: 750, ProductID: "23410220000024638", LineNumber: intPtr(3)},
+		"23410220000024639": {ServiceName: "INSTANT_CASH_900", ServiceID: "234102200006767", ProductName: "INSTANT_CASH", Amount: 900, ProductID: "23410220000024639", LineNumber: intPtr(4)},
+		"23410220000024640": {ServiceName: "INSTANT_CASH_1000", ServiceID: "234102200006767", ProductName: "INSTANT_CASH", Amount: 1000, ProductID: "23410220000024640", LineNumber: intPtr(5)},
+		"23410220000024656": {ServiceName: "SOCCER_CASH_100", ServiceID: "234102200006772", ProductName: "SOCCER_CASH", Amount: 100, ProductID: "23410220000024656", LineNumber: intPtr(1)},
+		"23410220000024657": {ServiceName: "SOCCER_CASH_500", ServiceID: "234102200006772", ProductName: "SOCCER_CASH", Amount: 500, ProductID: "23410220000024657", LineNumber: intPtr(2)},
+		"23410220000024658": {ServiceName: "SOCCER_CASH_800", ServiceID: "234102200006772", ProductName: "SOCCER_CASH", Amount: 800, ProductID: "23410220000024658", LineNumber: intPtr(3)},
+		"23410220000024659": {ServiceName: "SOCCER_CASH_1200", ServiceID: "234102200006772", ProductName: "SOCCER_CASH", Amount: 1200, ProductID: "23410220000024659", LineNumber: intPtr(4)},
+		"23410220000024648": {ServiceName: "SALARY_FOR_LIFE_200", ServiceID: "234102200006770", ProductName: "SALARY_FOR_LIFE", Amount: 200, ProductID: "23410220000024648", LineNumber: intPtr(1)},
+		"23410220000024649": {ServiceName: "SALARY_FOR_LIFE_500", ServiceID: "234102200006770", ProductName: "SALARY_FOR_LIFE", Amount: 500, ProductID: "23410220000024649", LineNumber: intPtr(2)},
+		"23410220000024650": {ServiceName: "SALARY_FOR_LIFE_800", ServiceID: "234102200006770", ProductName: "SALARY_FOR_LIFE", Amount: 800, ProductID: "23410220000024650", LineNumber: intPtr(3)},
+		"23410220000024651": {ServiceName: "SALARY_FOR_LIFE_1200", ServiceID: "234102200006770", ProductName: "SALARY_FOR_LIFE", Amount: 1200, ProductID: "23410220000024651", LineNumber: intPtr(7)},
+		"23410220000027462": {ServiceName: "INSTANT_CASHOUT_50", ServiceID: "234102200006961", ProductName: "INSTANT_CASHOUT", Amount: 50, ProductID: "23410220000027462", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027463": {ServiceName: "INSTANT_CASHOUT_75", ServiceID: "234102200006961", ProductName: "INSTANT_CASHOUT", Amount: 75, ProductID: "23410220000027463", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027470": {ServiceName: "WYSE_CASH_50", ServiceID: "234102200006965", ProductName: "WYSE_CASH", Amount: 50, ProductID: "23410220000027470", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027471": {ServiceName: "WYSE_CASH_75", ServiceID: "234102200006965", ProductName: "WYSE_CASH", Amount: 75, ProductID: "23410220000027471", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027464": {ServiceName: "SALARY_FOR_LIFE_50", ServiceID: "234102200006962", ProductName: "SALARY_FOR_LIFE", Amount: 50, ProductID: "23410220000027464", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027465": {ServiceName: "SALARY_FOR_LIFE_75", ServiceID: "234102200006962", ProductName: "SALARY_FOR_LIFE", Amount: 75, ProductID: "23410220000027465", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027466": {ServiceName: "FAST_FINGER_50", ServiceID: "234102200006963", ProductName: "FAST_FINGER", Amount: 50, ProductID: "23410220000027466", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027467": {ServiceName: "FAST_FINGER_75", ServiceID: "234102200006963", ProductName: "FAST_FINGER", Amount: 75, ProductID: "23410220000027467", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027468": {ServiceName: "SOCCER_CASH_50", ServiceID: "234102200006964", ProductName: "SOCCER_CASH", Amount: 75, ProductID: "23410220000027468", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"23410220000027469": {ServiceName: "SOCCER_CASH_75", ServiceID: "234102200006964", ProductName: "SOCCER_CASH", Amount: 100, ProductID: "23410220000027469", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true)},
+		"0017182000001707":  {ServiceName: "INSTANT_CASH_50", ServiceID: "234102200006964", ProductName: "INSTANT_CASH", Amount: 50, ProductID: "0017182000001707", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true), Network: strPtr("GLO")},
+		"0017182000003867":  {ServiceName: "FAST_FINGER_50", ServiceID: "234102200006964", ProductName: "FAST_FINGER", Amount: 50, ProductID: "0017182000003867", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true), Network: strPtr("GLO")},
+		"0017182000003868":  {ServiceName: "SALARY_FOR_LIFE_50", ServiceID: "234102200006964", ProductName: "SALARY_FOR_LIFE", Amount: 50, ProductID: "0017182000003868", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true), Network: strPtr("GLO")},
+		"0017182000003869":  {ServiceName: "WYSE_CASH_50", ServiceID: "234102200006964", ProductName: "WYSE_CASH", Amount: 50, ProductID: "0017182000003869", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true), Network: strPtr("GLO")},
+		"0017182000003870":  {ServiceName: "SOCCER_CASH_50", ServiceID: "234102200006964", ProductName: "SOCCER_CASH", Amount: 50, ProductID: "0017182000003870", LineNumber: intPtr(1), IsDailySubscription: boolPtr(true), Network: strPtr("GLO")},
+	}
+
+	if val, ok := data[productID]; ok {
+		return &val
+	}
+	return nil
+}
+
+type SecureDDataDumpData struct {
+	Msisdn      string `json:"msisdn"`
+	Activation  string `json:"activation"`
+	ProductID   string `json:"productID"`
+	Description string `json:"description"`
+	Timestamp   string `json:"timestamp"` // keep as string, parse later
+	TrxId       string `json:"trxId"`
+}
+
+func (u *Utils) SendMarketingPartnersPostback(instanceId int64) {
+	// get the secure datadump model
+	filter := bson.M{"id": instanceId}
+	secureDDumpCol := u.db.Collection("secure_data_dump")
+	// find one
+	var secureDDump types.SecureDDataDump
+	err := secureDDumpCol.FindOne(context.Background(), filter).Decode(&secureDDump)
+	if err != nil {
+		log.Println("Error finding secure data dump: ", err.Error())
+		return
+	}
+	// get the data
+	var data SecureDDataDumpData
+	if err := json.Unmarshal([]byte(secureDDump.Data), &data); err != nil {
+		log.Println("Error unmarshalling secure data dump data: ", err.Error())
+		return
+	}
+	// let's see the data
+	log.Println("Data: ", data)
+	transRef := data.TrxId
+	phoneNumer := data.Msisdn
+	activation := data.Activation
+	description := data.Description
+	productId := data.ProductID
+	var subscriptionAmount any
+	var gameType string
+	source := secureDDump.Source
+	if source == "ST_GLO" {
+		nitroswitchServiceCodes := SubscriptionServiceCodes()
+		nitroswitchEquivalentServiceID := GetEquivalentProductCode()
+		productCode, ok := nitroswitchEquivalentServiceID[productId]
+		if !ok {
+			productCode = ""
+		}
+		subscription := nitroswitchServiceCodes[productCode]
+		subscriptionAmount = subscription.Price
+		gameType = subscription.Name
+	} else if source == "MTN" {
+		game_details := SecureDAndUpstreamServiceAndProductDetails(productId)
+		subscriptionAmount = game_details.Amount
+		gameType = game_details.ProductName
+	} else {
+		subscriptionAmount = nil
+		gameType = ""
+
+	}
+	dataDump := map[string]interface{}{
+		"transRef":           transRef,
+		"phoneNumer":         phoneNumer,
+		"activation":         activation,
+		"description":        description,
+		"subscriptionAmount": subscriptionAmount,
+		"gameType":           gameType,
+		"source":             source,
+		"networkProvider":    source,
+	}
+	u.runAndSendTrafficPostback(transRef, dataDump)
+
+}
+
+func (u *Utils) runAndSendTrafficPostback(reference string, dataDumps map[string]interface{}) {
+	ctx := context.Background()
+	var phoneNumber, gameType, networkProvider string
+	var subscriptionAmount float64
+
+	if dataDumps != nil {
+		phoneNumber, _ = dataDumps["phone_number"].(string)
+		reference, _ = dataDumps["reference"].(string)
+		if val, ok := dataDumps["subscription_amount"].(float64); ok {
+			subscriptionAmount = val
+		}
+		gameType, _ = dataDumps["game_type"].(string)
+		networkProvider, _ = dataDumps["network_provider"].(string)
+	} else {
+		var instance types.SecureDTransaction
+		err := u.db.Collection("secure_d_transaction").
+			FindOne(ctx, bson.M{"reference": reference}).
+			Decode(&instance)
+		if err != nil {
+			fmt.Errorf("transaction not found: %w", err)
+			return
+		}
+		phoneNumber = instance.PhoneNumber
+		reference = instance.Reference
+		subscriptionAmount = instance.SubscriptionAmount
+		gameType = *instance.GameType
+	}
+
+	isWinwise := strings.HasPrefix(reference, "WINWISE")
+	sent := false
+	postbackResponse := ""
+	postbackSkip := u.PostSkipDecisioning()
+
+	var source string
+
+	// ======================= LOGIC TREE ==========================
+
+	if strings.HasPrefix(reference, "a1") {
+		source = "ANGEL_MEDIA"
+		if !postbackSkip {
+			resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+			sent, postbackSkip, postbackResponse = true, false, resp
+		} else {
+			sent, postbackResponse = false, "pass"
+		}
+	} else if strings.HasPrefix(reference, "aazz") && len(reference) == 55 {
+		source = "MORBIDTEK_MEDIA"
+		if !postbackSkip {
+			resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+			postbackResponse = resp
+			if resp != "Failed" {
+				var parsed map[string]interface{}
+				if json.Unmarshal([]byte(resp), &parsed) == nil {
+					if parsed["error"] == float64(0) && parsed["info"] == "Conversion Received." {
+						sent, postbackSkip = true, false
+					}
+				}
+			}
+		} else {
+			sent, postbackResponse = false, "pass"
+		}
+	} else if strings.Contains(reference, "mobitech") {
+		reference = reference[8:]
+		source = "MORBIDTEK_MEDIA"
+		if !postbackSkip {
+			resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+			postbackResponse = resp
+			if resp != "Failed" {
+				var parsed map[string]interface{}
+				if json.Unmarshal([]byte(resp), &parsed) == nil {
+					if parsed["error"] == float64(0) && parsed["info"] == "Conversion Received." {
+						sent, postbackSkip = true, false
+					}
+				}
+			}
+		} else {
+			sent, postbackResponse = false, "pass"
+		}
+	} else if len(reference) == 32 {
+		source = "MOBPLUS"
+		if !postbackSkip {
+			resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+			postbackResponse = resp
+			if resp == "success" {
+				sent, postbackSkip = true, false
+			} else {
+				sent = false
+			}
+		} else {
+			sent, postbackResponse = false, "pass"
+		}
+	} else if (strings.Contains(reference, ",") || strings.Contains(reference, "%")) && len(reference) > 29 {
+		source = "TRAFFIC_COMPANY"
+		if postbackSkip {
+			sent, postbackResponse = false, "pass"
+		} else {
+			resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+			postbackResponse, sent, postbackSkip = resp, true, false
+		}
+	} else if strings.Contains(reference, "phoenix") || strings.HasPrefix(reference, "sci_") || strings.Contains(reference, "_832") {
+		source = "Phoenix_MTN"
+		if !postbackSkip {
+			resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+			postbackResponse = resp
+			var parsed map[string]interface{}
+			if json.Unmarshal([]byte(resp), &parsed) == nil {
+				if parsed["code"] == float64(0) && parsed["msg"] == "report success" {
+					sent, postbackSkip = true, false
+				}
+			}
+		} else {
+			sent, postbackResponse = false, "pass"
+		}
+	} else {
+		if strings.HasPrefix(reference, "5") {
+			source = "GOLDEN_GOOSE"
+			if !postbackSkip {
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse = resp
+				if resp == "Received" {
+					sent, postbackSkip = true, false
+				}
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else if strings.Contains(reference, "vic") {
+			source = "VICTORY_ADS"
+			if !postbackSkip {
+				reference = reference[3:]
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse = resp
+				var parsed map[string]interface{}
+				if json.Unmarshal([]byte(resp), &parsed) == nil {
+					if parsed["message"] == "conversion recorded successfully" {
+						sent = true
+					}
+				}
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else if strings.Contains(reference, "upstream_paidMTN") {
+			source = "UPSTREAM"
+		} else if strings.HasPrefix(reference, "golden") {
+			source = "GOLDEN_GOOSE"
+			if !postbackSkip {
+				reference = reference[6:]
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse, sent, postbackSkip = resp, true, false
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else if isWinwise {
+			source = "WINWISE_UPSELLING"
+		} else if len(reference) == 47 {
+			source = "CLICK_STREAM"
+			if !postbackSkip {
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse, sent, postbackSkip = resp, true, false
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else if strings.HasPrefix(reference, "9399_") || strings.HasPrefix(reference, "mobipium") {
+			source = "MOBIPIUM"
+			if strings.HasPrefix(reference, "mobipium") {
+				reference = reference[8:]
+			}
+			if !postbackSkip {
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse, sent, postbackSkip = resp, true, false
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else if strings.Contains(reference, "CBT") {
+			source = "CLICKBYTE_MEDIA"
+			reference = reference[3:]
+			if !postbackSkip {
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse, sent, postbackSkip = resp, true, false
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else if strings.Contains(reference, "sigma") {
+			source = "SIGMA"
+			reference = reference[5:]
+			if !postbackSkip {
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse, sent, postbackSkip = resp, true, false
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else if strings.Contains(reference, "shine") {
+			source = "SHINE_DIGITAL"
+			reference = reference[5:]
+			if !postbackSkip {
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse, sent, postbackSkip = resp, true, false
+			}
+		} else if strings.Contains(reference, "greencorp") {
+			source = "GREEN_CORP"
+			reference = reference[9:]
+			if !postbackSkip {
+				resp := sendAdsTrackerPostbackURL(source, reference, subscriptionAmount)
+				postbackResponse, sent, postbackSkip = resp, true, false
+			} else {
+				sent, postbackResponse = false, "pass"
+			}
+		} else {
+			source = "ORGANIC"
+		}
+	}
+	// send update post requets
+	requestData := map[string]interface{}{
+		"postback_sent":     sent,
+		"postback_response": postbackResponse,
+		"click_id":          reference,
+		"controlled":        postbackSkip,
+		"converted":         false,
+		"amount_played":     subscriptionAmount,
+		"phone_number":      phoneNumber,
+		"game_type":         gameType,
+		"telco_network":     networkProvider,
+		"source":            source,
+	}
+	recordUrl := "https://localhost:3421"
+
+	headers := map[string]interface{}{
+		"Content-Type": "application/json",
+	}
+	req := webutils.NewRequest("POST", recordUrl, requestData, headers, ctx)
+	response, err := req.Send()
+	if err != nil {
+		log.Println("Error sending postback: ", err.Error())
+		return
+	}
+	if response.StatusCode != 200 {
+		log.Println("Error sending postback: ", response.StatusCode)
+		return
+	}
+	log.Println("Postback sent successfully")
+}
+
+func sendAdsTrackerPostbackURL(source, clickID string, amount float64) string {
+	// TODO: make HTTP request, parse response
+	return "mock_response"
 }
