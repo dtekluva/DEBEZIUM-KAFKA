@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"go_consumer_service/types"
+	"go_consumer_service/utils"
 	"log"
 
 	"github.com/segmentio/kafka-go"
@@ -15,13 +16,15 @@ import (
 type KafkaConsumer struct {
 	brokerUrl *string
 	database  *mongo.Database
+	utils     *utils.Utils
 }
 
 // NewKafkaConsumer creates a new instance of KafkaConsumer
-func NewKafkaConsumer(brokerUrl *string, database *mongo.Database) *KafkaConsumer {
+func NewKafkaConsumer(brokerUrl *string, database *mongo.Database, utils *utils.Utils) *KafkaConsumer {
 	return &KafkaConsumer{
 		brokerUrl: brokerUrl,
 		database:  database,
+		utils:     utils,
 	}
 }
 
@@ -123,6 +126,8 @@ func (kc *KafkaConsumer) ConsumeDebeziumSecureDataDumpTask() {
 					log.Printf("failed to insert securedatadump: %v\n", err)
 				} else {
 					log.Println("SecureDataDump inserted successfully")
+					// send marketing message
+					kc.utils.SendMarketingPartnersPostback(event.Payload.After.ID)
 				}
 			}
 		case "u":

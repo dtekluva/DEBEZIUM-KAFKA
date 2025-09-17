@@ -5,6 +5,7 @@ import (
 	"go_consumer_service/cmd/api"
 	"go_consumer_service/config"
 	"go_consumer_service/consumers"
+	"go_consumer_service/utils"
 	"time"
 
 	"github.com/Ayobami6/webutils"
@@ -26,8 +27,9 @@ func main() {
 			panic(err)
 		}
 	}()
+	newUtils := utils.NewUtils(dbClient.Database("lotto2"))
 	kafkaBrokerUrl := webutils.GetEnv("KAFKA_BROKER_URL", "localhost:9092")
-	kafkaConsumer := consumers.NewKafkaConsumer(&kafkaBrokerUrl, dbClient.Database("lotto2"))
+	kafkaConsumer := consumers.NewKafkaConsumer(&kafkaBrokerUrl, dbClient.Database("lotto2"), newUtils)
 	go kafkaConsumer.ConsumeDebeziumMobidTrackerTask()
 	go kafkaConsumer.ConsumeDebeziumSecureDataDumpTask()
 	go kafkaConsumer.ConsumeLottoDebeziumEvent()

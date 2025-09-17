@@ -293,7 +293,10 @@ type SecureDDataDumpData struct {
 	TrxId       string `json:"trxId"`
 }
 
-func (u *Utils) SendMarketingPartnersPostback(instanceId int64) {
+func (u *Utils) SendMarketingPartnersPostback(instanceId int) {
+	// sending postcallback slack message
+	message := fmt.Sprintf("Sending marketing partners postback for instance id: %d", instanceId)
+	go SendSlackNotification(message)
 	// get the secure datadump model
 	filter := bson.M{"id": instanceId}
 	secureDDumpCol := u.db.Collection("secure_data_dump")
@@ -350,6 +353,7 @@ func (u *Utils) SendMarketingPartnersPostback(instanceId int64) {
 		"networkProvider":    source,
 	}
 	u.runAndSendTrafficPostback(transRef, dataDump)
+	log.Println("Sent marketing partners postback for instance id: ", instanceId)
 
 }
 
