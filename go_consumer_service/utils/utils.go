@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"go_consumer_service/types"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Ayobami6/webutils"
 	"go.mongodb.org/mongo-driver/bson"
@@ -599,6 +602,65 @@ func (u *Utils) runAndSendTrafficPostback(reference string, dataDumps map[string
 }
 
 func sendAdsTrackerPostbackURL(source, clickID string, amount float64) string {
-	// TODO: make HTTP request, parse response
-	return "mock_response"
+	var url string
+
+	switch source {
+	case "MORBIDTEK_MEDIA":
+		url = fmt.Sprintf("http://mobtekmedia.hopb0.com/notify/110122/?click_id=%s", clickID)
+	case "MOBPLUS":
+		url = fmt.Sprintf("http://m.mobplus.net/c/p/74a3eac380d944aab100c0f6112b268f?txid=%s", clickID)
+	case "AD_MAVEN":
+		url = fmt.Sprintf("https://xml.realtime-bid.com/conversion?c=%s&count=1&value=%v", clickID, amount)
+	case "ANGEL_MEDIA":
+		url = fmt.Sprintf("http://postback.rustclick.com/pb/377?click_id=%s&payout=", clickID)
+	case "TRAFFIC_COMPANY":
+		url = fmt.Sprintf("https://postback.level23.nl/?currency=USD&handler=11342&hash=14f1e1b8e3a711e0c49d672857610ea6&tracker=%s", clickID)
+	case "GOLDEN_GOOSE":
+		url = fmt.Sprintf("http://n.gg.agency/ntf1/?token=af54c5e8739f11b00bca46da47962675&click_id=%s", clickID)
+	case "Phoenix_MTN":
+		url = fmt.Sprintf("https://adwh.mywkd.com/thirdparty?event_name=Subscribe&phx_click_id=%s&product_id=832", clickID)
+	case "VICTORY_ADS":
+		url = fmt.Sprintf("http://mnoi.online/trackwsp.php?subid=%s", clickID)
+	case "GOLDEN_GOLDEN":
+		url = fmt.Sprintf("http://n.gg.agency/ntf1/?token=af54c5e8739f11b00bca46da47962675&click_id=%s", clickID)
+	case "CLICK_STREAM":
+		url = fmt.Sprintf("https://track.goforclicks.swaarm-clients.com/postback?click_id=%s&security_token=4fe0f47d-81b5-4077-9b0a-b2a402969743", clickID)
+	case "MOBIPIUM":
+		url = fmt.Sprintf("https://smobipiumlink.com/conversion/index.php?jp=%s&source=WINWISE", clickID)
+	case "CLICKBYTE_MEDIA":
+		url = fmt.Sprintf("https://click.clickbyte-media.com/postback?cid=%s&payout=%v", clickID, amount)
+	case "SIGMA":
+		url = fmt.Sprintf("https://cd.sigmamobi.com/callbacks/223?request_id=%s&event=lead", clickID)
+	case "SHINE_DIGITAL":
+		url = fmt.Sprintf("http://shinedigitalworld.offerstrack.net/advBack.php?click_id=%s", clickID)
+	case "GREEN_CORP":
+		url = fmt.Sprintf("https://pfwsxng7jj55bf7q4n6v7egmlu0sizta.lambda-url.eu-west-2.on.aws/?aid=3702176&tid=134377&visitor_id=%s&payout=0.50", clickID)
+	default:
+		return "Failed"
+	}
+
+	// HTTP client with 2s timeout
+	client := http.Client{Timeout: 2 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return "Failed"
+	}
+	defer resp.Body.Close()
+
+	fmt.Println("Postback response: ", resp.StatusCode, " for source: ", source)
+
+	// Special cases
+	if source == "VICTORY_ADS" {
+		body, _ := ioutil.ReadAll(resp.Body)
+		return string(body)
+	} else if source == "CLICK_STREAM" || source == "MOBIPIUM" || source == "CLICKBYTE_MEDIA" || source == "SHINE_DIGITAL" {
+		return fmt.Sprintf("%d", resp.StatusCode)
+	}
+
+	// Default: return response body text
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "Failed"
+	}
+	return string(body)
 }
