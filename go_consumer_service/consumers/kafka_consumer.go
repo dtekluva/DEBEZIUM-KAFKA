@@ -127,7 +127,7 @@ func (kc *KafkaConsumer) ConsumeDebeziumSecureDataDumpTask() {
 				} else {
 					log.Println("SecureDataDump inserted successfully")
 					// send marketing message
-					kc.utils.SendMarketingPartnersPostback(event.Payload.After.ID)
+					// kc.utils.SendMarketingPartnersPostback(event.Payload.After.ID)
 				}
 			}
 		case "u":
