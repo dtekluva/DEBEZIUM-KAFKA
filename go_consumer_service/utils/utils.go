@@ -605,7 +605,7 @@ func (u *Utils) runAndSendTrafficPostback(reference string, dataDumps map[string
 		"telco_network":     networkProvider,
 		"source":            source,
 	}
-	recordUrl := "https://localhost:3421"
+	recordUrl := "https://2n1v0h7p-8000.uks1.devtunnels.ms/"
 
 	headers := map[string]interface{}{
 		"Content-Type": "application/json",
