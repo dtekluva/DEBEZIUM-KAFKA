@@ -298,8 +298,8 @@ type SecureDDataDumpData struct {
 
 func (u *Utils) SendMarketingPartnersPostback(instanceId int) {
 	// sending postcallback slack message
-	message := fmt.Sprintf("Sending marketing partners postback for instance id: %d", instanceId)
-	go SendSlackNotification(message)
+	// message := fmt.Sprintf("Sending marketing partners postback for instance id: %d", instanceId)
+	// go SendSlackNotification(message)
 	// get the secure datadump model
 	filter := bson.M{"id": instanceId}
 	secureDDumpCol := u.db.Collection("secure_data_dump")
@@ -605,7 +605,7 @@ func (u *Utils) runAndSendTrafficPostback(reference string, dataDumps map[string
 		"telco_network":     networkProvider,
 		"source":            source,
 	}
-	recordUrl := "https://2n1v0h7p-8000.uks1.devtunnels.ms/"
+	recordUrl := "https://libertydraw.com/api/v1/ads-tracker/morbid-data-callback"
 
 	headers := map[string]interface{}{
 		"Content-Type": "application/json",
